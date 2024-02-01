@@ -21,23 +21,37 @@ class DeliveryController extends Controller
 
     /**
      * The function should work via AJAX request
+     * The incoming JSON data should look like this
+     * {
+     *     parcel: {
+     *         width: int,
+     *         height: int,
+     *         length: int,
+     *         weight: int,
+     *     },
+     *     recipient: {
+     *         customer_name: string,
+     *         phone_number: string,
+     *         email: string,
+     *         delivery_address: string,
+     *     },
+     * }
      *
      * @param Request $request
      * @return JsonResponse
-     * @throws ValidationException
      */
     public function sendParcelData(Request $request): JsonResponse
     {
         // Validate incoming request data
-        $this->validate($request, [
+        $this->validateJsonData($request, [
             'parcel.width' => 'required|numeric',
             'parcel.height' => 'required|numeric',
             'parcel.length' => 'required|numeric',
             'parcel.weight' => 'required|numeric',
-            'recipient.full_name' => 'required|string',
+            'recipient.customer_name' => 'required|string',
             'recipient.phone_number' => 'required|string',
             'recipient.email' => 'required|email',
-            'recipient.address' => 'required|string',
+            'recipient.delivery_address' => 'required|string',
         ]);
 
         // Extract data from the request
@@ -59,6 +73,20 @@ class DeliveryController extends Controller
         return response()->json(['message' => 'Parcel data sent to FedEx']);
     }
 
+    protected function validateJsonData(Request $request, array $rules)
+    {
+        try {
+            $this->validate($request, $rules);
+        } catch (ValidationException $exception) {
+            $jsonErrors = [
+                'errors' => $exception->errors(),
+                'message' => 'The given data was invalid.',
+            ];
+
+            // Returning validation errors in JSON format with code 422
+            return response()->json($jsonErrors, 422);
+        }
+    }
 
 
 }
