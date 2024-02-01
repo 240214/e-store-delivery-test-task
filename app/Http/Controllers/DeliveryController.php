@@ -23,6 +23,7 @@ class DeliveryController extends Controller
      * The function should work via AJAX request
      * The incoming JSON data should look like this
      * {
+     *     service_name: string,
      *     parcel: {
      *         width: int,
      *         height: int,
